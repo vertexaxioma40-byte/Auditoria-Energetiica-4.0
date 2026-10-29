@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VERTEX AXIOMA® | Consorcios 4.0 - Auditoría Energética</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Family -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            500: '#14b8a6',
+                            900: '#134e4a',
+                        },
+                        dark: {
+                            bg: '#0a0f1d',
+                            card: '#111827',
+                            border: '#1f2937',
+                            hover: '#1e293b'
+                        },
+                        neon: {
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #080c16;
+            color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-active {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+        }
+        .pulse-emerald {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-emerald 2s infinite;
+        }
+        @keyframes pulse-emerald {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .pulse-rose {
+            box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+            animation: pulse-rose 1.5s infinite;
+        }
+        @keyframes pulse-rose {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(244, 63, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #080c16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-cyan-500/20">
+                    <i data-lucide="zap" class="w-6 h-6 stroke-[2.5]"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-lg tracking-wider text-white">VERTEX AXIOMA<span class="text-cyan-400">®</span></span>
+                        <span class="bg-cyan-950/80 text-cyan-400 text-[10px] font-mono px-2 py-0.5 rounded border border-cyan-800/50">CONSORCIOS 4.0</span>
+                    </div>
+                    <p class="text-xs text-gray-400 font-mono">Vertical de Auditoría Energética & Tableros Inteligentes</p>
+                </div>
+            </div>
+
+            <!-- Edificio Selector & Status -->
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
+                    <i data-lucide="building-2" class="w-4 h-4 text-cyan-400"></i>
+                    <span class="text-xs font-semibold text-gray-200">Consorcio San Martín 1040</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 ml-1 pulse-emerald"></span>
+                </div>
+
+                <button onclick="triggerGlobalAudit()" class="px-3.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-semibold transition flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>Auditar Red</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Top KPIs Banner -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Gateway Status -->
+            <div class="glass-card rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+                <div class="flex items-center justify-between text-gray-400 text-xs font-medium mb-2">
+                    <span>GATEWAY IOT TABLERO GENERAL</span>
+                    <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="gatewayStatusText" class="text-xl font-bold text-emerald-400">ONLINE</span>
+                    <span class="text-xs text-gray-400 font-mono">(99.8% Uptime)</span>
+                </div>
+                <div class="mt-3 text-xs font-mono text-gray-400 flex items-center justify-between border-t border-gray-800/60 pt-2">
+                    <span>Ping: <strong class="text-gray-200" id="gatewayPing">14ms</strong></span>
+                    <span>FW: <strong class="text-gray-200">v4.2.1-AX</strong></span>
+                    <span>LoRaWAN: <strong class="text-emerald-400">-72dBm</strong></span>
+                </div>
+            </div>
+
+            <!-- Consumo Mensual Consorcio -->
+            <div class="glass-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-gray-400 text-xs font-medium mb-2">
+                    <span>CONSUMO EDIFICIO (OCTUBRE)</span>
+                    <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-2xl font-bold font-mono text-white" id="totalEdificioKwh">3,842.50</span>
+                    <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
+                        <i data-lucide="trending-down" class="w-3 h-3"></i> -4.2% vs sep
+                    </span>
+                </div>
+                <div class="mt-3 text-xs text-gray-400 border-t border-gray-800/60 pt-2 flex justify-between">
+                    <span>Proyección mensual:</span>
+                    <span class="font-mono text-gray-200">4,120 kWh</span>
+                </div>
+            </div>
+
+            <!-- Estado de Salud de Térmicas / Disyuntores -->
+            <div class="glass-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-gray-400 text-xs font-medium mb-2">
+                    <span>INTEGRIDAD RFC TABLEROS</span>
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-cyan-400"></i>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-xl font-bold text-white" id="rfcStatusSummary">16 / 16 OK</span>
+                    <span id="rfcStatusBadge" class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                        Sellos Intactos
+                    </span>
+                </div>
+                <div class="mt-3 text-xs text-gray-400 border-t border-gray-800/60 pt-2 flex justify-between">
+                    <span>Vandalismo / Alteración:</span>
+                    <span id="tamperCount" class="font-mono text-emerald-400 font-bold">0 Detectados</span>
+                </div>
+            </div>
+
+            <!-- Prueba de Fugas de Consumo Fantasma -->
+            <div class="glass-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-gray-400 text-xs font-medium mb-2">
+                    <span>TEST INMUTABILIDAD / FUGAS</span>
+                    <i data-lucide="search-check" class="w-4 h-4 text-amber-400"></i>
+                </div>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-xl font-bold text-white" id="leakTestSummary">Línea Normal</span>
+                    <span class="text-xs text-gray-400 font-mono" id="leakTestValue">0.00 kWh residual</span>
+                </div>
+                <div class="mt-3 text-xs text-gray-400 border-t border-gray-800/60 pt-2 flex justify-between">
+                    <span>Último Test de Vacío:</span>
+                    <span class="font-mono text-gray-300">Hoy 04:00 hs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Panel: Selector de Unidades Funcionales & Tablero Individual (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- Selector de Departamentos -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                <i data-lucide="layout-grid" class="w-5 h-5 text-cyan-400"></i>
+                                Unidades Funcionales & Tableros Seccionales
+                            </h2>
+                            <p class="text-xs text-gray-400">Seleccione un departamento para auditar térmicas, RFC y lecturas en tiempo real.</p>
+                        </div>
+                        <span class="text-xs font-mono bg-gray-800 text-gray-300 px-2.5 py-1 rounded border border-gray-700 self-start sm:self-auto">8 Unidades Monitoreadas</span>
+                    </div>
+
+                    <!-- UF Grid Buttons -->
+                    <div class="grid grid-cols-4 sm:grid-cols-8 gap-2" id="unitGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Detalle de la Unidad Seleccionada -->
+                <div class="glass-card rounded-xl p-5 space-y-5" id="unitDetailCard">
+                    <!-- Dynamic Header -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-2xl font-bold text-white font-mono" id="selectedUnitTitle">Dpto 1A</h3>
+                                <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded border border-emerald-500/30 font-mono" id="selectedUnitStatus">NORMAL</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Titular: <span id="selectedUnitOwner" class="text-gray-200">Carlos Giménez</span> | Sello Digital: <span class="font-mono text-cyan-400" id="selectedUnitHash">0x8F9...A14</span></p>
+                        </div>
+
+                        <div class="text-right">
+                            <p class="text-xs text-gray-400">Consumo Activo Instantáneo</p>
+                            <p class="text-2xl font-bold font-mono text-cyan-400" id="selectedUnitCurrentKw">1.42 kW</p>
+                        </div>
+                    </div>
+
+                    <!-- Térmicas & Disyuntores Inteligentes con RFC -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                                Módulos con Certificación RFC (Registro de Identificación)
+                            </h4>
+                            <span class="text-[11px] text-gray-400 font-mono">Control de Corte Remoto / Detección de Falla</span>
+                        </div>
+
+                        <!-- Breakers Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="breakersList">
+                            <!-- Dynamically generated breakers -->
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Consumo de la Unidad en Tiempo Real -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i>
+                                Curva de Carga Diario (kWh)
+                            </h4>
+                            <span class="text-[11px] font-mono text-gray-400">Medición continua IoT</span>
+                        </div>
+                        <div class="h-44 w-full relative">
+                            <canvas id="unitChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Panel: Auditorías Específicas, Fugas y Conciliación (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <!-- MODULO: Prueba de Fugas en Vacío / Inmutabilidad -->
+                <div class="glass-card rounded-xl p-5 border-l-4 border-l-amber-500">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+                                <i data-lucide="search-check" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Prueba de Fugas en Vacío</h3>
+                                <p class="text-xs text-gray-400">Verificación de consumo fantasma / enganches</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-300 leading-relaxed mb-4">
+                        Desconecta lógicamente las térmicas de la unidad <strong class="text-cyan-400" id="leakTestUnitName">1A</strong>. Si el medidor del Gateway sigue registrando consumo con térmicas abiertas, se detecta una <span class="text-amber-400 font-semibold">derivación clandestina</span> o fuga a tierra aguas arriba.
+                    </p>
+
+                    <div class="bg-gray-950/80 p-3.5 rounded-lg border border-gray-800 space-y-2 mb-4 font-mono text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Estado Térmicas:</span>
+                            <span id="vacuumBreakerState" class="text-emerald-400 font-bold">CERRADAS (ON)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Consumo Medido en Bus:</span>
+                            <span id="vacuumMeasuredPower" class="text-white font-bold">1.42 kW</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-800 pt-2">
+                            <span class="text-gray-400">Dictamen de Fuga:</span>
+                            <span id="vacuumVerdict" class="text-gray-400">Sin prueba ejecutada</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="runVacuumLeakTest(false)" id="btnTestClean" class="flex-1 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-3.5 h-3.5"></i> Test Normal (Limpio)
+                        </button>
+                        <button onclick="runVacuumLeakTest(true)" id="btnTestLeak" class="flex-1 py-2 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/40 text-amber-300 text-xs font-semibold transition flex items-center justify-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Simular Fuga
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MODULO: Monitoreo RFC y Simulación de Vandalismo -->
+                <div class="glass-card rounded-xl p-5 border-l-4 border-l-rose-500">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 rounded-lg bg-rose-500/10 text-rose-400">
+                                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Seguridad de Módulos RFC</h3>
+                                <p class="text-xs text-gray-400">Detección de vandalismo y apertura de gabinete</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-300 leading-relaxed mb-3">
+                        Cada término/disyuntor posee un código RFC inmutable. Si se intenta puenteado, remoción física o sabotaje, el sensor de masa emite una alerta crítica inmediata.
+                    </p>
+
+                    <!-- Console Event Monitor -->
+                    <div class="bg-gray-950 p-3 rounded-lg border border-gray-800 font-mono text-[11px] h-32 overflow-y-auto space-y-1.5 mb-4" id="vandalismLog">
+                        <div class="text-gray-500">[00:00:00] Sistema de monitoreo RFC activo. Todos los componentes respondiendo ping...</div>
+                    </div>
+
+                    <button onclick="simulateVandalism()" class="w-full py-2.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold tracking-wide transition flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20">
+                        <i data-lucide="zap-off" class="w-4 h-4"></i>
+                        Simular Sabotaje en Térmica RFC-T2 (Dpto 1A)
+                    </button>
+                </div>
+
+                <!-- MODULO: Conciliación de Facturación Electrica -->
+                <div class="glass-card rounded-xl p-5 border-l-4 border-l-cyan-500">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                                <i data-lucide="receipt" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">Conciliador de Factura de Consumo</h3>
+                                <p class="text-xs text-gray-400">Comparativa IoT App vs. Facturado por Distribuidora</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-gray-900/90 p-2.5 rounded border border-gray-800">
+                                <span class="text-gray-400 block text-[10px]">Lectura IoT Gateway</span>
+                                <span class="font-mono font-bold text-sm text-cyan-400" id="reconcileIotValue">482.10 kWh</span>
+                            </div>
+                            <div class="bg-gray-900/90 p-2.5 rounded border border-gray-800">
+                                <span class="text-gray-400 block text-[10px]">Facturado por Distribuidora</span>
+                                <input type="number" id="billInputValue" value="510.00" oninput="calculateBillReconciliation()" class="w-full bg-transparent font-mono font-bold text-sm text-white focus:outline-none border-b border-gray-700 focus:border-cyan-400">
+                            </div>
+                        </div>
+
+                        <!-- Verdict Card -->
+                        <div id="reconciliationVerdictBox" class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-lg flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-amber-400 font-bold uppercase block">Dictamen de Auditoría</span>
+                                <span id="reconcileVerdictTitle" class="text-xs font-bold text-amber-300">DISCREPANCIA REGISTRADA (+5.78%)</span>
+                            </div>
+                            <button onclick="generateAuditReport()" class="px-2.5 py-1 bg-amber-500 text-gray-950 font-bold rounded text-[11px] hover:bg-amber-400 transition">
+                                Exportar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Evidence Report -->
+    <div id="reportModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="glass-card max-w-xl w-full rounded-2xl p-6 border border-cyan-500/30 shadow-2xl relative space-y-4">
+            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-gray-800 pb-3">
+                <div class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Informe Técnico de Inmutabilidad Energética</h3>
+                    <p class="text-xs text-gray-400 font-mono">HASH: 0x9f88a213e4ba77c001d99a41</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs text-gray-300 font-mono bg-gray-950 p-4 rounded-xl border border-gray-800 max-h-80 overflow-y-auto">
+                <p class="text-cyan-400 font-bold">[ CERTIFICADO DIGITAL DE EVIDENCIA AUDITABLE ]</p>
+                <p>Consorcio: Edificio San Martín 1040 (ID: CS-1040-BA)</p>
+                <p>Unidad Afectada: Dpto 1A - Matrícular RFC-T1-1A-78F9</p>
+                <p>Gateway ID: GW-SM1040-MAIN (Firmware v4.2.1-AX)</p>
+                <hr class="border-gray-800">
+                <p class="text-amber-400">EVENTO DETECTADO:</p>
+                <p id="modalEventDetail">Discrepancia en medición de facturación del 5.78% sobre la curva real del Gateway IoT.</p>
+                <p class="text-emerald-400 mt-2">REGISTRO DE INMUTABILIDAD EN CADENA:</p>
+                <p class="text-[10px] text-gray-500 break-all">Signature: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="closeReportModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg">Cerrar</button>
+                <button onclick="downloadMockPDF()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-lg flex items-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Descargar Acta Firmada (.PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Implementation -->
+    <script>
+        // Data Store for Units & Breakers
+        const unitsData = [
+            {
+                id: '1A',
+                owner: 'Carlos Giménez',
+                hash: '0x8F9...A14',
+                kwhMonth: 482.10,
+                currentKw: 1.42,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-1A-78F9', name: 'Térmica Iluminación / Tomas General', type: 'Termomagnética 20A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-T2-1A-91C2', name: 'Térmica Climatización & A/A', type: 'Termomagnética 25A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-1A-32A4', name: 'Disyuntor Diferencial Principal', type: 'Diferencial 40A / 30mA', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [0.8, 0.6, 0.4, 0.5, 0.9, 1.8, 2.2, 1.5, 1.2, 1.4, 1.9, 2.5]
+            },
+            {
+                id: '1B',
+                owner: 'María Elena Rossi',
+                hash: '0x3B2...901',
+                kwhMonth: 310.45,
+                currentKw: 0.85,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-1B-4411', name: 'Térmica General', type: 'Termomagnética 20A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-1B-8832', name: 'Disyuntor Diferencial', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [0.4, 0.3, 0.3, 0.4, 0.6, 1.1, 1.0, 0.9, 0.8, 0.85, 1.0, 1.2]
+            },
+            {
+                id: '2A',
+                owner: 'Estudio Jurídico Silva',
+                hash: '0x7C1...D88',
+                kwhMonth: 620.80,
+                currentKw: 2.15,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-2A-1029', name: 'Térmica Tomas Servidores', type: 'Termomagnética 25A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-T2-2A-3321', name: 'Térmica Iluminación', type: 'Termomagnética 16A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-2A-9920', name: 'Disyuntor Diferencial', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [1.2, 1.1, 1.1, 1.2, 1.5, 2.5, 2.8, 2.7, 2.4, 2.15, 2.3, 2.0]
+            },
+            {
+                id: '2B',
+                owner: 'Lucía Fernández',
+                hash: '0x1A9...E43',
+                kwhMonth: 295.00,
+                currentKw: 0.62,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-2B-5541', name: 'Térmica General', type: 'Termomagnética 20A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-2B-2210', name: 'Disyuntor Principal', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [0.3, 0.2, 0.2, 0.3, 0.5, 0.8, 0.7, 0.6, 0.62, 0.7, 0.9, 0.8]
+            },
+            {
+                id: '3A',
+                owner: 'Gonzalo Méndez',
+                hash: '0x5F4...B22',
+                kwhMonth: 410.20,
+                currentKw: 1.10,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-3A-6612', name: 'Térmica Principal', type: 'Termomagnética 20A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-3A-7734', name: 'Disyuntor Diferencial', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [0.5, 0.4, 0.4, 0.5, 0.8, 1.3, 1.2, 1.1, 1.10, 1.2, 1.4, 1.3]
+            },
+            {
+                id: '3B',
+                owner: 'Roberto Gómez',
+                hash: '0x2D8...F90',
+                kwhMonth: 530.15,
+                currentKw: 1.80,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-3B-8821', name: 'Térmica Iluminación/Tomas', type: 'Termomagnética 20A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-3B-3390', name: 'Disyuntor Diferencial', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [0.9, 0.7, 0.6, 0.8, 1.2, 2.0, 1.9, 1.8, 1.80, 2.1, 2.2, 1.9]
+            },
+            {
+                id: '4A',
+                owner: 'Valentina Prado',
+                hash: '0x9E3...A11',
+                kwhMonth: 380.00,
+                currentKw: 0.95,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-4A-1100', name: 'Térmica General', type: 'Termomagnética 20A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-4A-4455', name: 'Disyuntor Principal', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [0.4, 0.3, 0.3, 0.4, 0.7, 1.1, 1.0, 0.95, 1.0, 1.1, 1.2, 1.0]
+            },
+            {
+                id: '4B',
+                owner: 'Soraia Albarracín',
+                hash: '0x4C7...D09',
+                kwhMonth: 813.80,
+                currentKw: 3.10,
+                status: 'NORMAL',
+                breakers: [
+                    { id: 'RFC-T1-4B-9988', name: 'Térmica A/A Central', type: 'Termomagnética 32A', state: true, rfcStatus: 'OK' },
+                    { id: 'RFC-D1-4B-7711', name: 'Disyuntor Diferencial', type: 'Diferencial 40A', state: true, rfcStatus: 'OK' }
+                ],
+                chartData: [1.5, 1.2, 1.1, 1.4, 2.1, 3.5, 3.2, 3.1, 3.10, 3.4, 3.8, 3.3]
+            }
+        ];
+
+        let selectedUnitId = '1A';
+        let unitChartInstance = null;
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderUnitGrid();
+            selectUnit('1A');
+            startPingSimulation();
+            calculateBillReconciliation();
+        });
+
+        // Render Unit Grid Buttons
+        function renderUnitGrid() {
+            const gridContainer = document.getElementById('unitGrid');
+            gridContainer.innerHTML = '';
+
+            unitsData.forEach(unit => {
+                const btn = document.createElement('button');
+                btn.id = `unit-btn-${unit.id}`;
+                btn.onclick = () => selectUnit(unit.id);
+                btn.className = `p-2.5 rounded-lg border text-center transition flex flex-col items-center justify-center gap-1 ${
+                    unit.id === selectedUnitId 
+                    ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-500/10' 
+                    : 'bg-gray-900/60 border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-200'
+                }`;
+
+                btn.innerHTML = `
+                    <span class="text-xs font-bold font-mono">${unit.id}</span>
+                    <span class="text-[10px] font-mono ${unit.status === 'SABOTAJE' ? 'text-rose-400' : 'text-emerald-400'}">${unit.currentKw} kW</span>
+                `;
+                gridContainer.appendChild(btn);
+            });
+        }
+
+        // Select active unit and update UI
+        function selectUnit(unitId) {
+            selectedUnitId = unitId;
+            const unit = unitsData.find(u => u.id === unitId);
+
+            // Update Unit Grid selection state
+            unitsData.forEach(u => {
+                const el = document.getElementById(`unit-btn-${u.id}`);
+                if (el) {
+                    if (u.id === unitId) {
+                        el.className = 'p-2.5 rounded-lg border text-center transition flex flex-col items-center justify-center gap-1 bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-500/10';
+                    } else {
+                        el.className = 'p-2.5 rounded-lg border text-center transition flex flex-col items-center justify-center gap-1 bg-gray-900/60 border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-200';
+                    }
+                }
+            });
+
+            // Populate details
+            document.getElementById('selectedUnitTitle').innerText = `Dpto ${unit.id}`;
+            document.getElementById('selectedUnitOwner').innerText = unit.owner;
+            document.getElementById('selectedUnitHash').innerText = unit.hash;
+            document.getElementById('selectedUnitCurrentKw').innerText = `${unit.currentKw.toFixed(2)} kW`;
+            document.getElementById('leakTestUnitName').innerText = unit.id;
+
+            const statusBadge = document.getElementById('selectedUnitStatus');
+            if (unit.status === 'SABOTAJE') {
+                statusBadge.innerText = 'SABOTAJE DETECTADO';
+                statusBadge.className = 'bg-rose-500/20 text-rose-400 text-xs px-2 py-0.5 rounded border border-rose-500/30 font-mono pulse-rose';
+            } else {
+                statusBadge.innerText = 'NORMAL';
+                statusBadge.className = 'bg-emerald-500/10 text-emerald-400 text-xs px-2 py-0.5 rounded border border-emerald-500/30 font-mono';
+            }
+
+            renderBreakers(unit);
+            updateChart(unit);
+            
+            // Sync Reconciliation IoT Value with current unit monthly consumption
+            document.getElementById('reconcileIotValue').innerText = `${unit.kwhMonth.toFixed(2)} kWh`;
+            calculateBillReconciliation();
+        }
+
+        // Render Breakers / Disyuntores for selected unit
+        function renderBreakers(unit) {
+            const list = document.getElementById('breakersList');
+            list.innerHTML = '';
+
+            unit.breakers.forEach((breaker, idx) => {
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-lg border transition ${
+                    breaker.rfcStatus === 'TAMPERED' 
+                    ? 'bg-rose-950/40 border-rose-500/60' 
+                    : 'bg-gray-900/80 border-gray-800'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="${breaker.type.includes('Diferencial') ? 'shield-check' : 'toggle-right'}" class="w-4 h-4 ${breaker.state ? 'text-emerald-400' : 'text-gray-500'}"></i>
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-200">${breaker.name}</h5>
+                                <span class="text-[10px] text-gray-400 font-mono">${breaker.type}</span>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" ${breaker.state ? 'checked' : ''} onchange="toggleBreaker('${unit.id}', ${idx})" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                        </label>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-gray-800/80 flex items-center justify-between text-[10px] font-mono">
+                        <span class="text-gray-500">RFC ID: <span class="text-gray-300">${breaker.id}</span></span>
+                        <span class="${breaker.rfcStatus === 'TAMPERED' ? 'text-rose-400 font-bold' : 'text-emerald-400'}">${breaker.rfcStatus === 'TAMPERED' ? '⚠️ INCIDENCIA RFC' : '✓ RFC Inmune'}</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // Toggle Breaker ON/OFF
+        function toggleBreaker(unitId, breakerIndex) {
+            const unit = unitsData.find(u => u.id === unitId);
+            if (unit) {
+                unit.breakers[breakerIndex].state = !unit.breakers[breakerIndex].state;
+                
+                // Recalculate power based on active breakers
+                const activeRatio = unit.breakers.filter(b => b.state).length / unit.breakers.length;
+                unit.currentKw = 2.0 * activeRatio;
+
+                if (unit.id === selectedUnitId) {
+                    document.getElementById('selectedUnitCurrentKw').innerText = `${unit.currentKw.toFixed(2)} kW`;
+                    document.getElementById('vacuumMeasuredPower').innerText = `${unit.currentKw.toFixed(2)} kW`;
+                }
+
+                // Update Vacuum test dashboard status if all are off
+                const allOff = unit.breakers.every(b => !b.state);
+                document.getElementById('vacuumBreakerState').innerText = allOff ? 'DESCONECTADAS (OFF)' : 'CONECTADAS (ON)';
+                document.getElementById('vacuumBreakerState').className = allOff ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+
+                renderUnitGrid();
+            }
+        }
+
+        // Render Chart.js
+        function updateChart(unit) {
+            const ctx = document.getElementById('unitChart').getContext('2d');
+            
+            if (unitChartInstance) {
+                unitChartInstance.destroy();
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+            gradient.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
+            gradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+
+            unitChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'],
+                    datasets: [{
+                        label: 'Consumo kWh',
+                        data: unit.chartData,
+                        borderColor: '#06b6d4',
+                        borderWidth: 2,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#06b6d4',
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // Module: Vacuum Leak Test Simulation (Prueba de Inmutabilidad)
+        function runVacuumLeakTest(simulateLeak) {
+            const unit = unitsData.find(u => u.id === selectedUnitId);
+            
+            // Turn off all breakers logically for test
+            unit.breakers.forEach(b => b.state = false);
+            renderBreakers(unit);
+
+            document.getElementById('vacuumBreakerState').innerText = 'DESCONECTADAS (OFF)';
+            document.getElementById('vacuumBreakerState').className = 'text-amber-400 font-bold';
+
+            const measuredEl = document.getElementById('vacuumMeasuredPower');
+            const verdictEl = document.getElementById('vacuumVerdict');
+
+            if (!simulateLeak) {
+                // Clean state
+                measuredEl.innerText = '0.00 kW';
+                measuredEl.className = 'text-emerald-400 font-bold font-mono';
+                verdictEl.innerText = '✓ LÍNEA LIMPIA (0.00 kWh residual)';
+                verdictEl.className = 'text-emerald-400 font-bold';
+            } else {
+                // Leak / Unauthorized Tap state
+                measuredEl.innerText = '0.48 kW [ANOMALÍA]';
+                measuredEl.className = 'text-rose-400 font-bold font-mono animate-pulse';
+                verdictEl.innerText = '⚠️ FUGA / ENGANCHE CLANDESTINO DETECTADO';
+                verdictEl.className = 'text-rose-400 font-bold';
+
+                // Log entry
+                logVandalismEvent(`[TEST FUGA] Alerta de derivación no autorizada en Dpto ${unit.id}. Consumo en vacío: 0.48 kW. Hash registrado.`);
+            }
+        }
+
+        // Module: Vandalism / RFC Tamper Simulation
+        function simulateVandalism() {
+            const unit = unitsData.find(u => u.id === '1A');
+            unit.status = 'SABOTAJE';
+            unit.breakers[0].rfcStatus = 'TAMPERED';
+
+            // Global UI updates
+            document.getElementById('rfcStatusSummary').innerText = '15 / 16 OK';
+            document.getElementById('rfcStatusBadge').innerText = '1 Alerta Activa';
+            document.getElementById('rfcStatusBadge').className = 'text-xs text-rose-400 bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 pulse-rose';
+            
+            document.getElementById('tamperCount').innerText = '1 DETECTADO';
+            document.getElementById('tamperCount').className = 'font-mono text-rose-400 font-bold';
+
+            logVandalismEvent(`CRÍTICO: Interrupción física o manipulación en RFC-T1-1A-78F9 (Dpto 1A). Brecha de Sello enviada a servidor.`);
+            
+            selectUnit('1A');
+        }
+
+        // Helper: Log event to security console
+        function logVandalismEvent(message) {
+            const logBox = document.getElementById('vandalismLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const newEntry = document.createElement('div');
+            newEntry.className = 'text-rose-400 flex items-start gap-1 font-mono text-[11px]';
+            newEntry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> <span>${message}</span>`;
+            logBox.prepend(newEntry);
+        }
+
+        // Module: Reconciliation Logic
+        function calculateBillReconciliation() {
+            const unit = unitsData.find(u => u.id === selectedUnitId);
+            const iotValue = unit.kwhMonth;
+            const billInput = parseFloat(document.getElementById('billInputValue').value) || 0;
+
+            const diff = billInput - iotValue;
+            const percentDiff = ((diff / iotValue) * 100).toFixed(2);
+
+            const titleEl = document.getElementById('reconcileVerdictTitle');
+            const boxEl = document.getElementById('reconciliationVerdictBox');
+
+            if (Math.abs(percentDiff) <= 1.0) {
+                titleEl.innerText = `CONFORME (${percentDiff > 0 ? '+' : ''}${percentDiff}%)`;
+                titleEl.className = 'text-xs font-bold text-emerald-400';
+                boxEl.className = 'bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-lg flex items-center justify-between';
+            } else {
+                titleEl.innerText = `DISCREPANCIA REGISTRADA (${percentDiff > 0 ? '+' : ''}${percentDiff}%)`;
+                titleEl.className = 'text-xs font-bold text-amber-300';
+                boxEl.className = 'bg-amber-500/10 border border-amber-500/30 p-3 rounded-lg flex items-center justify-between';
+            }
+        }
+
+        // Report & Modal Triggers
+        function generateAuditReport() {
+            document.getElementById('reportModal').classList.remove('hidden');
+            document.getElementById('reportModal').classList.add('flex');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+            document.getElementById('reportModal').classList.remove('flex');
+        }
+
+        function downloadMockPDF() {
+            alert('Emitiendo Acta de Evidencia con Hash Inmutable firmada digitalmente...');
+            closeReportModal();
+        }
+
+        function triggerGlobalAudit() {
+            alert('Auditoría global ejecutada. Todos los Gateways y sellos RFC re-validados sin errores de comunicación.');
+        }
+
+        // Ping Simulation
+        function startPingSimulation() {
+            setInterval(() => {
+                const ping = Math.floor(Math.random() * 8) + 12;
+                document.getElementById('gatewayPing').innerText = `${ping}ms`;
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
